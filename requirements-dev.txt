@@ -1,0 +1,19 @@
+# Core dependencies
+requests>=2.25.0
+
+# Testing
+pytest>=6.0.0
+responses>=0.13.0
+pytest-cov>=2.12.0
+
+# Code quality
+black>=21.0.0
+flake8>=3.9.0
+isort>=5.9.0
+
+# Documentation
+sphinx>=4.0.0
+sphinx-rtd-theme>=1.0.0
+
+# Type checking (optional)
+mypy>=0.910 
