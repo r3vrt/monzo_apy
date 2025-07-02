@@ -27,9 +27,26 @@ This library implements all features that are possible with the [Monzo public AP
 
 For full details, see the [Monzo API documentation](https://docs.monzo.com/).
 
+## Installation
+
+**Note:** This package is not yet available on PyPI. Please install directly from GitHub using the instructions below.
+
+### From GitHub (Recommended until PyPI release)
+
+```bash
+pip install git+https://github.com/r3vrt/monzo-apy.git
+```
+
+### (Planned) PyPI Install
+
+Once published to PyPI, you'll be able to install with:
+
+```bash
+pip install monzo-apy
+```
+
 ## Features
 
-### Phase 1: Core API (Everything the Monzo API Publicly Supports)
 - OAuth2 authentication (login, token refresh, save/load tokens)
 - Get accounts (list, details)
 - Get balance
@@ -40,27 +57,9 @@ For full details, see the [Monzo API documentation](https://docs.monzo.com/).
 - Whoami (get user info)
 - Robust error handling (custom exceptions)
 - Rate limiting and retry logic
-
-### Phase 2: Developer Experience & Automation
-- CLI tools for common flows (auth, account info, transactions)
-- Automated OAuth2 flow (as you have now)
-- Config file management (pretty-printed, secure)
-- Integration tests (real API, with clear warnings)
-- Mock-based unit tests (using responses)
-- Documentation and usage examples
-
-### Phase 3: Advanced Features & Helpers
-- Auto-pagination for all list endpoints
-- Helper methods for "recent authentication" (for full transaction history)
-- Data model improvements (type hints, optional fields)
-- More robust error reporting/logging
-- Async support (future enhancement, not supported by Monzo API but can be added for client-side concurrency)
-
-## Installation
-
-```bash
-pip install monzo-apy
-```
+- Configuration management (pretty-printed, secure)
+- Unit and integration tests
+- Pythonic data models with type hints
 
 ## Quick Start
 
