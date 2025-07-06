@@ -434,14 +434,14 @@ class MonzoClient:
             List of all transactions
         """
         all_transactions = []
-        before_id = before
+        since_id = since
         
         while True:
             params = {"account_id": account_id, "limit": "100"}
-            if since:
-                params["since"] = since
-            if before_id:
-                params["before"] = before_id
+            if since_id:
+                params["since"] = since_id
+            if before:
+                params["before"] = before
 
             response = self._make_request("GET", "/transactions", params=params)
             transactions = [Transaction.from_dict(tx) for tx in response["transactions"]]
