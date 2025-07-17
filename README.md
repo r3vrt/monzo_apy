@@ -142,6 +142,27 @@ balance = client.get_balance(accounts[0].id)
 transactions = client.get_transactions(accounts[0].id, auto_paginate=True)
 ```
 
+## Injecting Credentials Directly (Bypassing File I/O)
+
+You can now provide credentials directly to the `MonzoClient` using the `credentials` parameter. This is useful if you store credentials in a database or environment and do not want the library to read or write any files.
+
+```python
+from monzo.client import MonzoClient
+
+# Example: credentials loaded from a database
+creds = {
+    "access_token": "...",
+    "refresh_token": "...",
+    "client_id": "...",
+    "client_secret": "...",
+    "redirect_uri": "...",
+}
+
+client = MonzoClient(credentials=creds)
+```
+
+When `credentials` is provided, the client will not attempt to load or save any credential files.
+
 ## API Reference
 
 ### Authentication

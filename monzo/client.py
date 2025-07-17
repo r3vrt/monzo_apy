@@ -36,6 +36,7 @@ class MonzoClient:
         max_retries: int = 3,
         retry_delay: float = 1.0,
         auto_save: bool = True,
+        credentials: Optional[dict] = None,
     ):
         """Initialize the Monzo client.
 
@@ -49,20 +50,30 @@ class MonzoClient:
             max_retries: Maximum number of retries for failed requests
             retry_delay: Base delay between retries (will be exponential)
             auto_save: Whether to automatically save auth info after token refresh (default: True)
+            credentials: Optional dict of credentials to use directly (bypasses file I/O)
         """
+        self._credentials_injected = credentials is not None
         if not auth_file:
             auth_file = os.path.join("config", "auth.json")
-        
-        # Initialize with passed parameters first
-        self.access_token = access_token or os.getenv("MONZO_ACCESS_TOKEN")
-        self.refresh_token = refresh_token or os.getenv("MONZO_REFRESH_TOKEN")
-        self.client_id = client_id or os.getenv("MONZO_CLIENT_ID")
-        self.client_secret = client_secret or os.getenv("MONZO_CLIENT_SECRET")
-        self.redirect_uri = redirect_uri or os.getenv("MONZO_REDIRECT_URI")
-        
-        # Only load from auth file if no tokens were provided and auth file exists
-        if not self.access_token and os.path.exists(auth_file):
-            self.load_auth(auth_file)
+
+        if credentials is not None:
+            # Use provided credentials dict directly
+            self.access_token = credentials.get("access_token")
+            self.refresh_token = credentials.get("refresh_token")
+            self.client_id = credentials.get("client_id")
+            self.client_secret = credentials.get("client_secret")
+            self.redirect_uri = credentials.get("redirect_uri")
+        else:
+            # Initialize with passed parameters first
+            self.access_token = access_token or os.getenv("MONZO_ACCESS_TOKEN")
+            self.refresh_token = refresh_token or os.getenv("MONZO_REFRESH_TOKEN")
+            self.client_id = client_id or os.getenv("MONZO_CLIENT_ID")
+            self.client_secret = client_secret or os.getenv("MONZO_CLIENT_SECRET")
+            self.redirect_uri = redirect_uri or os.getenv("MONZO_REDIRECT_URI")
+
+            # Only load from auth file if no tokens were provided and auth file exists
+            if not self.access_token and os.path.exists(auth_file):
+                self.load_auth(auth_file)
 
         self.session = requests.Session()
         if self.access_token:
@@ -81,6 +92,9 @@ class MonzoClient:
 
     def save_auth(self, filename: Optional[str] = None) -> None:
         """Save current auth info to a JSON file in config/ directory by default."""
+        if getattr(self, '_credentials_injected', False):
+            # Do not save to file if credentials were injected
+            return
         filename = filename or self._auth_file or os.path.join("config", "auth.json")
         config_dir = os.path.dirname(filename)
         if config_dir and not os.path.exists(config_dir):
@@ -97,6 +111,9 @@ class MonzoClient:
 
     def load_auth(self, filename: str) -> None:
         """Load auth info from a JSON file and update the client."""
+        if getattr(self, '_credentials_injected', False):
+            # Do not load from file if credentials were injected
+            return
         with open(filename, "r") as f:
             data = json.load(f)
         self.access_token = data.get("access_token")
