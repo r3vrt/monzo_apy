@@ -37,6 +37,7 @@ class MonzoClient:
         retry_delay: float = 1.0,
         auto_save: bool = True,
         credentials: Optional[dict] = None,
+        timeout: float = 30.0,
     ):
         """Initialize the Monzo client.
 
@@ -51,6 +52,7 @@ class MonzoClient:
             retry_delay: Base delay between retries (will be exponential)
             auto_save: Whether to automatically save auth info after token refresh (default: True)
             credentials: Optional dict of credentials to use directly (bypasses file I/O)
+            timeout: Timeout (in seconds) for all HTTP requests (default: 30.0)
         """
         self._credentials_injected = credentials is not None
         if not auth_file:
@@ -89,6 +91,7 @@ class MonzoClient:
         self.max_retries = max_retries
         self.retry_delay = retry_delay
         self.auto_save = auto_save
+        self.timeout = timeout
 
     def save_auth(self, filename: Optional[str] = None) -> None:
         """Save current auth info to a JSON file in config/ directory by default."""
@@ -165,7 +168,7 @@ class MonzoClient:
             "redirect_uri": self.redirect_uri,
             "code": code,
         }
-        response = requests.post(self.TOKEN_URL, data=data, timeout=30)
+        response = requests.post(self.TOKEN_URL, data=data, timeout=self.timeout)
         response.raise_for_status()
         tokens = response.json()
         self.access_token = tokens["access_token"]
@@ -189,7 +192,7 @@ class MonzoClient:
             "client_secret": self.client_secret,
             "refresh_token": self.refresh_token,
         }
-        response = requests.post(self.TOKEN_URL, data=data, timeout=30)
+        response = requests.post(self.TOKEN_URL, data=data, timeout=self.timeout)
         response.raise_for_status()
         tokens = response.json()
         self.access_token = tokens["access_token"]
@@ -271,7 +274,7 @@ class MonzoClient:
                         params=params,
                         data=form_data,
                         headers={"Content-Type": "application/x-www-form-urlencoded"},
-                        timeout=30,
+                        timeout=self.timeout,
                     )
                 else:
                     response = self.session.request(
@@ -279,7 +282,7 @@ class MonzoClient:
                         url=url,
                         params=params,
                         json=data,
-                        timeout=30,
+                        timeout=self.timeout,
                     )
                 
                 response.raise_for_status()
