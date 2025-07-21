@@ -476,7 +476,7 @@ class MonzoClient:
                 break
                 
             # Use the last transaction's ID as the 'before' parameter for next request
-            before_id = transactions[-1].id
+            since_id = transactions[-1].id
         
         return all_transactions
 
