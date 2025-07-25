@@ -454,16 +454,12 @@ class MonzoClient:
             List of all transactions
         """
         all_transactions = []
-        seen_transaction_ids = set()  # Track seen transaction IDs to prevent duplicates
-        since_id = since
-        max_iterations = 1000  # Safety limit to prevent infinite loops
-        iteration_count = 0
+        current_since = since
         
-        while iteration_count < max_iterations:
-            iteration_count += 1
+        while True:
             params = {"account_id": account_id, "limit": "100"}
-            if since_id:
-                params["since"] = since_id
+            if current_since:
+                params["since"] = current_since
             if before:
                 params["before"] = before
 
@@ -472,37 +468,21 @@ class MonzoClient:
             
             if not transactions:
                 break
-            
-            # Check for duplicates and only add new transactions
-            new_transactions = []
-            for transaction in transactions:
-                if transaction.id not in seen_transaction_ids:
-                    seen_transaction_ids.add(transaction.id)
-                    new_transactions.append(transaction)
-                else:
-                    # If we encounter a duplicate, we've likely reached the end
-                    # of new data, so we can break to prevent infinite loops
-                    break
-            
-            # If no new transactions were found, break to prevent infinite loop
-            if not new_transactions:
-                break
                 
-            all_transactions.extend(new_transactions)
+            all_transactions.extend(transactions)
             
             # Check if we have more transactions to fetch
             if len(transactions) < 100:
                 break
                 
-            # Use the last transaction's ID as the 'since' parameter for next request
-            # This gets us transactions after the last one we've seen
-            since_id = transactions[-1].id
-        
-        # Log a warning if we hit the maximum iterations
-        if iteration_count >= max_iterations:
-            import logging
-            logging.warning(f"Transaction pagination stopped after {max_iterations} iterations to prevent infinite loop. "
-                          f"Retrieved {len(all_transactions)} transactions with {len(seen_transaction_ids)} unique IDs.")
+            # FIXED: Use the last transaction's timestamp + 1 second for next request
+            # This ensures we don't get the same transaction again and follows Monzo API spec
+            last_transaction = transactions[-1]
+            from datetime import datetime, timedelta, timezone
+            
+            # Add 1 second to avoid getting the same transaction
+            next_since = last_transaction.created + timedelta(seconds=1)
+            current_since = next_since.isoformat()
         
         return all_transactions
 
