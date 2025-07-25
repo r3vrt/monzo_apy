@@ -623,7 +623,7 @@ class TestMonzoClient:
         )
         responses.add(
             responses.GET,
-            "https://api.monzo.com/transactions?account_id=acc_123&limit=100&before=tx_2",
+            "https://api.monzo.com/transactions?account_id=acc_123&limit=100&since=tx_2",
             json=mock_response_2,
             status=200,
         )
