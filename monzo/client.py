@@ -394,25 +394,21 @@ class MonzoClient:
     def get_transactions(
         self,
         account_id: str,
-        limit: Optional[int] = None,
         since: Optional[str] = None,
         before: Optional[str] = None,
-        auto_paginate: bool = False,
         ensure_recent_auth: bool = False,
     ) -> List[Transaction]:
-        """Get transactions for a specific account.
+        """Get all transactions for a specific account using pagination.
 
         Args:
             account_id: The account ID
-            limit: Maximum number of transactions to return per request
             since: ISO 8601 timestamp to get transactions since
             before: ISO 8601 timestamp to get transactions before
-            auto_paginate: If True, automatically fetch all transactions using pagination
             ensure_recent_auth: If True, perform full reauthentication to ensure recent authentication
                               (required for access beyond 90 days of transactions)
 
         Returns:
-            List of transactions
+            List of all transactions
 
         Raises:
             MonzoAPIError: If the API request fails
@@ -428,19 +424,7 @@ class MonzoClient:
         if ensure_recent_auth:
             self.ensure_recent_authentication()
             
-        if auto_paginate:
-            return self._get_all_transactions(account_id, since, before)
-        
-        params = {"account_id": account_id}
-        if limit:
-            params["limit"] = str(limit)
-        if since:
-            params["since"] = since
-        if before:
-            params["before"] = before
-
-        response = self._make_request("GET", "/transactions", params=params)
-        return [Transaction.from_dict(tx) for tx in response["transactions"]]
+        return self._get_all_transactions(account_id, since, before)
 
     def _get_all_transactions(self, account_id: str, since: Optional[str] = None, before: Optional[str] = None) -> List[Transaction]:
         """Get all transactions using pagination.
