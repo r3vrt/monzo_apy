@@ -3,7 +3,7 @@
 A Python library for interacting with the Monzo API.
 """
 
-__version__ = "0.1.0"
+__version__ = "0.2.0"
 __author__ = "Your Name"
 __email__ = "your.email@example.com"
 

@@ -148,7 +148,7 @@ class TestMonzoClient:
         }
         responses.add(
             responses.GET,
-            "https://api.monzo.com/transactions?account_id=acc_123",
+            "https://api.monzo.com/transactions?account_id=acc_123&limit=100",
             json=mock_response,
             status=200,
         )
@@ -169,17 +169,14 @@ class TestMonzoClient:
         mock_response = {"transactions": []}
         responses.add(
             responses.GET,
-            (
-                "https://api.monzo.com/transactions?"
-                "account_id=acc_123&limit=10&since=2023-01-01T00:00:00Z"
-            ),
+            "https://api.monzo.com/transactions?account_id=acc_123&limit=100&since=2023-01-01T00%3A00%3A00Z",
             json=mock_response,
             status=200,
         )
 
         client = MonzoClient(access_token="test_token")
         transactions = client.get_transactions(
-            "acc_123", limit=10, since="2023-01-01T00:00:00Z"
+            "acc_123", since="2023-01-01T00:00:00Z"
         )
 
         assert transactions == []
@@ -600,6 +597,7 @@ class TestMonzoClient:
                     "currency": "GBP",
                     "description": "Transaction 1",
                     "category": "general",
+                    "created": "2023-01-01T00:00:00Z",
                 },
                 {
                     "id": "tx_2",
@@ -607,6 +605,7 @@ class TestMonzoClient:
                     "currency": "GBP",
                     "description": "Transaction 2",
                     "category": "general",
+                    "created": "2023-01-01T00:00:01Z",
                 }
             ]
         }
@@ -621,15 +620,20 @@ class TestMonzoClient:
             json=mock_response_1,
             status=200,
         )
+        # The client should calculate the next 'since' as tx_2's created + 1 second
         responses.add(
             responses.GET,
-            "https://api.monzo.com/transactions?account_id=acc_123&limit=100&since=tx_2",
+            "https://api.monzo.com/transactions?account_id=acc_123&limit=100&since=2023-01-01T00%3A00%3A02%2B00%3A00",
             json=mock_response_2,
             status=200,
         )
 
         client = MonzoClient(access_token="test_token")
-        transactions = client.get_transactions("acc_123", auto_paginate=True)
+        transactions = client.get_transactions("acc_123")
+
+        assert len(transactions) == 2
+        assert transactions[0].id == "tx_1"
+        assert transactions[1].id == "tx_2"
 
         assert len(transactions) == 2
         assert transactions[0].id == "tx_1"
