@@ -60,3 +60,5 @@ coverage.xml
 # Sensitive configuration files
 config/auth.json
 .cursor/
+# uv lockfile
+uv.lock
